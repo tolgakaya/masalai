@@ -1,0 +1,76 @@
+name: pr
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @masalai/db generate
+      - name: Check (biome + typecheck + test + depcruise)
+        run: pnpm check
+      - name: Build all
+        run: pnpm build
+      - name: Production dependency audit
+        run: pnpm audit --prod || true
+      # TODO(stream-A/CI): once integration tests exist, add postgres+redis
+      # service containers and the IDOR suite; add turbo `--filter=...[origin/main]`
+      # affected-only runs + remote cache to keep the pipeline < 6 min (handbook §5.2).
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR title must be a conventional commit
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "$TITLE" | grep -qE '^(feat|fix|chore|docs|refactor|test|ci|build|perf|style|revert)(\(.+\))?!?: .+' \
+            || { echo "::error::PR title '$TITLE' is not a conventional commit (e.g. 'feat(api): ...')"; exit 1; }
+
+  loc-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Warn if PR exceeds 400 changed LOC (excl. lockfile/generated)
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          LOC=$(git diff --numstat "$BASE"...HEAD \
+            | grep -vE 'pnpm-lock.yaml|/generated/|/migrations/|next-env.d.ts' \
+            | awk '{ added += $1 } END { print added + 0 }')
+          echo "Changed LOC (excl. lockfile/generated/migrations): $LOC"
+          if [ "$LOC" -gt 400 ]; then
+            echo "::warning::PR is $LOC LOC (> 400). Consider slicing behind a feature flag (root CLAUDE.md)."
+          fi

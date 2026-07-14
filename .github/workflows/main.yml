@@ -1,0 +1,34 @@
+name: main
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @masalai/db generate
+      - name: Full pipeline (no skipping)
+        run: pnpm check
+      - name: Build all
+        run: pnpm build
+      # Railway deploys fire on green via watch-paths + wait-for-CI (handbook §5.3),
+      # wired in S0b (staging deploy). Deploy order: db-migrate -> worker -> api -> web.
