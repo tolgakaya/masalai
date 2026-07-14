@@ -12,7 +12,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "prisma"
   ],
   "scripts": {
     "generate": "prisma generate",
@@ -25,10 +26,10 @@
   },
   "dependencies": {
     "@masalai/shared": "workspace:*",
-    "@prisma/client": "6.19.3"
+    "@prisma/client": "6.19.3",
+    "prisma": "6.19.3"
   },
   "devDependencies": {
-    "prisma": "6.19.3",
     "vitest": "3.2.7"
   }
 }

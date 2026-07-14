@@ -1,0 +1,44 @@
+# apps/api image — railway-deployment.md §3 (turbo prune --docker, DOCKERFILE builder,
+# alpine, non-root, HEALTHCHECK). Build context = repo root (Root Directory EMPTY, §2).
+FROM node:22-alpine AS base
+RUN corepack enable
+# openssl: Prisma query-engine runtime dependency on alpine.
+RUN apk add --no-cache openssl
+
+# 1) prune the workspace down to @masalai/api's real dependencies.
+FROM base AS pruner
+WORKDIR /repo
+COPY . .
+RUN pnpm dlx turbo@2 prune @masalai/api --docker
+
+# 2) install manifests only → this layer is cached across source-only changes.
+FROM base AS builder
+WORKDIR /repo
+COPY --from=pruner /repo/out/json/ .
+RUN pnpm install --frozen-lockfile
+# 3) sources come after (reference §2.2 COPY ordering principle).
+COPY --from=pruner /repo/out/full/ .
+# turbo prune omits root tsconfig.base.json (referenced via extends) — copy it in.
+COPY tsconfig.base.json ./tsconfig.base.json
+RUN pnpm turbo build --filter=@masalai/api
+# 4) prod-only, portable output. --legacy: pnpm 10 otherwise requires
+# inject-workspace-packages=true (which we don't want to force on local installs).
+RUN pnpm deploy --legacy --filter=@masalai/api --prod /out
+# 5) pnpm deploy does not carry Prisma's generated client → regenerate into /out.
+# Locate the prisma CLI in the deployed pnpm store (paths are content-hashed).
+RUN cd /out \
+ && PRISMA_CLI=$(find node_modules/.pnpm -type f -path "*/prisma/build/index.js" | head -1) \
+ && node "$PRISMA_CLI" generate --schema node_modules/@masalai/db/prisma/schema.prisma
+
+# 6) runner: small, non-root, health-checked (reference §3.5 security set).
+FROM node:22-alpine AS runner
+RUN apk add --no-cache openssl
+WORKDIR /app
+RUN addgroup -S app && adduser -S app
+COPY --from=builder /out .
+USER app
+ENV NODE_ENV=production
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- "http://127.0.0.1:${PORT:-8080}/health" || exit 1
+CMD ["node", "dist/index.js"]
