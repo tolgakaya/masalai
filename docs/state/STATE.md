@@ -11,7 +11,7 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 3b done, packages/db complete)
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 4 done, WALKING SKELETON GREEN)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
@@ -40,9 +40,15 @@ Done (Block 3b) — full plan §4.5 domain schema, green (build+typecheck+lint+t
   - story_characters join (M:N, position, cascade FKs) added to schema AND docs/plan.md §4.5 (Doc-Touch)
   - repos userId-first, IDOR-safe (findFirst{id,userId}): character/story/asset + health-job; index re-exports enums(values)+model types
   - 4 DECISIONS entries logged (enum policy, value sets, story_characters, audit_log nullable). No QUESTIONS were opened (option B).
-NOW:  Block 4 · step — apps/api (Fastify 5 + zod type provider) skeleton: env.ts (zod), health route, POST /internal/health-job (enqueue) — m0-kickoff §7
-Then: apps/worker (BullMQ consumer writes health_jobs row) → apps/web + packages/ui + packages/providers (empty scaffolds) → walking-skeleton integration test → CI/depcruise/ADRs → Day-2 issues → PR
-Reminder: dev infra stack (pnpm infra:up) is RUNNING — pg has all domain tables + health_jobs migrated.
+Done (Block 4) — apps/api (Fastify 5 + zod type provider) + apps/worker (BullMQ 5): the walking skeleton, GREEN end-to-end:
+  - api: env.ts (zod, fail-fast), GET /health, POST /internal/health-job (enqueue, deterministic jobId=idempotent), GET /internal/health-job/:id (reads via db repo); genReqId accepts x-request-id
+  - worker: BullMQ consumer parses payload (shared contract) → upsertHealthJob (idempotent) → pino log w/ requestId; graceful shutdown (SIGTERM drains)
+  - EXIT EVIDENCE (freshly run): POST x-request-id=demo-req-42 → worker "health-job processed" → GET returns requestId=demo-req-42 → pg row present. requestId propagated api→queue→worker→db. (m0-kickoff §7 ✓)
+  - .env.example += API_HOST/API_PORT; build+typecheck+lint all green (shared 10/10 vitest)
+  - CAVEAT: manual round-trip proven; automated integration test (testcontainers, handbook §7) NOT yet written — deferred to CI block
+NOW:  Block 5 · step — empty scaffolds: apps/web (Next 16 placeholder page) + packages/ui (placeholder index, no tokens) + packages/providers (adapter interface stubs) — m0-kickoff §2/§7
+Then: dependency-cruiser + .dependency-cruiser.cjs (unblocks pnpm depcruise/check) → CI (.github pr.yml/main.yml) → ADR 0001-0004 → Day-2 issues #2/#3/#4 → open PR #1
+Reminder: dev infra (pnpm infra:up) RUNNING; api/worker are node dist (stopped after evidence). Full pnpm check still red ONLY on missing depcruise config (next).
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2
