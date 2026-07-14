@@ -11,16 +11,18 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 1 done)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
-Done: —
-NOW:  Block 1 · step 1 — write protocol state files + root CLAUDE.md
-Then: .claude/commands + settings.json; monorepo root (pnpm/turbo/tsconfig/biome)
-Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2)
+Done (Block 1):
+  - protocol state files + root CLAUDE.md (adca42b)
+  - .claude/commands (7) + settings.json + hooks (d82e351)
+  - monorepo root: pnpm/turbo/tsconfig.base/biome/.gitignore/.gitattributes (ca71688)
+NOW:  Block 2 · step — packages/shared: health-job queue payload zod schema (contract) + errors.ts + constants + index
+Then: docker-compose.dev.yml → packages/db (prisma §4.5) → apps/api → apps/worker → apps/web+ui+providers → walking-skeleton test
+Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
-### Next steps after Block 1
-Block 2: shared → docker-compose → db(prisma §4.5) → api → worker → web/ui/providers → walking-skeleton test
+### Next steps after Block 2
 Block 3: dependency-cruiser → CI → ADR 0001-0004 → Day-2 issues #2/#3/#4 → PR
 
 ### Blockers / waiting on Tolga
