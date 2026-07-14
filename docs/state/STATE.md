@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-14 (session: chore/1-s0-bootstrap · S0a morning)
+# STATE — updated 2026-07-14 (session: chore/1-s0-bootstrap · S0a morning, Block 2 done)
 
 > Multi-stream format (protocol §12 rule 2). During S0 a single session writes the **S0** block below;
 > streams A/B/C activate Day 2. On conflict, git + this file win over Serena memory / /sc:save.
@@ -11,15 +11,20 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 1 done)
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 2 done)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
   - protocol state files + root CLAUDE.md (adca42b)
   - .claude/commands (7) + settings.json + hooks (d82e351)
   - monorepo root: pnpm/turbo/tsconfig.base/biome/.gitignore/.gitattributes (ca71688)
-NOW:  Block 2 · step — packages/shared: health-job queue payload zod schema (contract) + errors.ts + constants + index
-Then: docker-compose.dev.yml → packages/db (prisma §4.5) → apps/api → apps/worker → apps/web+ui+providers → walking-skeleton test
+Done (Block 2) — packages/shared @masalai/shared, green (typecheck+build+lint ok, 10/10 vitest):
+  - health-job.ts: healthJobPayloadSchema (zod strictObject, v/id/requestId/enqueuedAt) — api→queue→worker contract (m0-kickoff §7)
+  - errors.ts: ErrorCode closed union + DomainError + hand-rolled Result/ok/err/isOk/isErr (handbook §6.2)
+  - constants.ts: HEALTH_JOB_QUEUE='health.job', HEALTH_JOB_PAYLOAD_VERSION=1 (§5.6/§6.5) · index.ts barrel · README
+  - deps: zod 4.4.3, vitest 3.2.7 (per DECISIONS); tsconfig(typecheck)+tsconfig.build(excl tests)
+NOW:  Block 2b · step — docker-compose.dev.yml (Postgres 16, Redis 7, MinIO, Mailpit) per m0-kickoff §3
+Then: packages/db (prisma §4.5) → apps/api → apps/worker → apps/web+ui+providers → walking-skeleton integration test
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2
