@@ -171,12 +171,13 @@ characters(id, user_id, name, age, type, art_style, status, sheet_asset_ids[], c
 assets(id, user_id, kind[upload|charsheet|page_image|audio|export], r2_key, mime, bytes, moderation_status, created_at, expires_at)
 stories(id, user_id, title, topic, moral, language, art_style, voice_id, status, manifest_jsonb, created_at)
 story_pages(id, story_id, index, text, illustration_prompt, image_asset_id, audio_asset_id, duration_ms)
+story_characters(story_id, character_id, position, PK(story_id,character_id))   -- M:N; position 0 = primary hero (added S0a, DECISIONS 2026-07-14)
 jobs(id, story_id, stage, status, attempts, error, started_at, finished_at)   -- mirror of queue state for UI/audit
 credits_ledger(id, user_id, delta, reason[purchase|generation|refund|bonus], ref_id, created_at)  -- append-only; balance = SUM
 subscriptions(id, user_id, stripe_customer_id, plan, status, period_end)
 audit_log(id, user_id, action, entity, meta_jsonb, ip, created_at)
 ```
-Design notes: credits as append-only ledger (never a mutable balance column); soft-delete users with hard-delete cron honoring retention policy; `manifest_jsonb` makes the player independent of joins.
+Design notes: credits as append-only ledger (never a mutable balance column); soft-delete users with hard-delete cron honoring retention policy; `manifest_jsonb` makes the player independent of joins. Enum policy (DECISIONS 2026-07-14): lifecycle fields (`characters.status/type`, `stories.status`, `jobs.stage/status`, `assets.moderation_status`, `subscriptions.plan/status`, `credits_ledger.reason`, `assets.kind`) are Postgres enums; content/config fields (`art_style`, `locale`, `language`) are String validated against an app-layer registry.
 
 ### 4.6 API surface (sketch)
 ```

@@ -11,7 +11,7 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 3a done)
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 3b done, packages/db complete)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
@@ -34,10 +34,15 @@ Done (Block 3a) — packages/db @masalai/db scaffold + async-spine table, green 
   - src/client.ts (internal PrismaClient singleton), repositories/health-job.repository.ts (upsert=idempotent + findById), index.ts barrel, README
   - deps: @prisma/client + prisma 6.19.3, @masalai/shared workspace:*; pnpm onlyBuiltDependencies allowlist added (Prisma engines)
   - DECISIONS: prisma-client-js classic generator; pnpm onlyBuiltDependencies (both 2026-07-14)
-NOW:  Block 3b · step — packages/db: full plan §4.5 domain schema (users/characters/assets/stories/story_pages/jobs/credits_ledger/subscriptions/audit_log) as 2nd migration + userId-first repo skeletons (handbook §7)
-  - §4.5 only enumerates values for assets.kind + credits_ledger.reason → use Prisma enums there; other status/type/style fields = String v1 (record DECISION + QUESTIONS, don't guess)
-Then: apps/api → apps/worker → apps/web+ui+providers → walking-skeleton integration test
-Reminder: dev infra stack (pnpm infra:up) is RUNNING — postgres has health_jobs + _prisma_migrations.
+Done (Block 3b) — full plan §4.5 domain schema, green (build+typecheck+lint+test); Tolga-specified enums baked in:
+  - migration 20260714110805_domain_model_v1 applied; 12 tables + 10 enum types verified in pg
+  - enums: CharacterType/Status, StoryStatus, JobStage/Status, ModerationStatus, AssetKind, CreditReason, SubscriptionPlan/Status; art_style/locale/language = String (app-registry)
+  - story_characters join (M:N, position, cascade FKs) added to schema AND docs/plan.md §4.5 (Doc-Touch)
+  - repos userId-first, IDOR-safe (findFirst{id,userId}): character/story/asset + health-job; index re-exports enums(values)+model types
+  - 4 DECISIONS entries logged (enum policy, value sets, story_characters, audit_log nullable). No QUESTIONS were opened (option B).
+NOW:  Block 4 · step — apps/api (Fastify 5 + zod type provider) skeleton: env.ts (zod), health route, POST /internal/health-job (enqueue) — m0-kickoff §7
+Then: apps/worker (BullMQ consumer writes health_jobs row) → apps/web + packages/ui + packages/providers (empty scaffolds) → walking-skeleton integration test → CI/depcruise/ADRs → Day-2 issues → PR
+Reminder: dev infra stack (pnpm infra:up) is RUNNING — pg has all domain tables + health_jobs migrated.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2

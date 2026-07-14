@@ -1,9 +1,10 @@
-// MasalAI database schema. The product domain model (users, characters, assets,
-// stories, ...) comes from plan §4.5 and lands in a follow-up migration.
+// MasalAI database schema — product domain model from plan §4.5.
 //
-// This first migration contains ONLY the walking-skeleton table (health_jobs),
-// which proves the api→queue→worker async spine (m0-kickoff §7) and is
-// deliberately separate from the product domain.
+// Enum policy (DECISIONS 2026-07-14): lifecycle fields are Prisma enums (closed
+// sets; Postgres ALTER TYPE ADD VALUE is expand-safe, removals go expand→contract).
+// Content/config fields (art_style, locale, language, plan-slug-like values) stay
+// String, validated at the app layer against a registry — adding a value must not
+// require a migration (plan §10.4: styles are versioned data, not schema).
 //
 // Conventions (engineering-handbook §6.5): snake_case tables (plural) + columns,
 // timestamptz for time. Generator/output choice recorded in DECISIONS.md.
@@ -17,9 +18,275 @@ generator client {
   provider = "prisma-client-js"
 }
 
-/// Internal health-check job for the S0 walking skeleton (m0-kickoff §7).
-/// The api enqueues a payload; the worker consumes it and writes a row here;
-/// GET /internal/health-job/:id reads it back. Not part of the product domain.
+// ─── Enums (lifecycle / closed sets) ─────────────────────────────────────────
+
+enum CharacterType {
+  child
+  sibling
+  pet
+  custom
+}
+
+/// Wizard lifecycle: upload → moderation → sheet gen → likeness approval (ux §6.3).
+enum CharacterStatus {
+  draft
+  moderating
+  generating_sheet
+  awaiting_approval
+  approved
+  rejected
+  failed
+}
+
+enum AssetKind {
+  upload
+  charsheet
+  page_image
+  audio
+  export
+}
+
+/// `error` = the scan itself failed (retryable), distinct from a content `rejected`.
+enum ModerationStatus {
+  pending
+  passed
+  rejected
+  error
+}
+
+/// Story pipeline progress (ux §6.5). Refunds are ledger events, not a status.
+enum StoryStatus {
+  queued
+  writing
+  illustrating
+  narrating
+  assembling
+  ready
+  failed
+}
+
+/// Story-scoped pipeline stages. Character-sheet generation is tracked via
+/// CharacterStatus and has no Job row in v1 (jobs is story-scoped).
+enum JobStage {
+  plan
+  illustrate
+  narrate
+  assemble
+  export
+}
+
+/// `dead` = moved to the DLQ after the final retry (scale-doc §4.3).
+enum JobStatus {
+  queued
+  running
+  succeeded
+  failed
+  dead
+}
+
+enum CreditReason {
+  purchase
+  generation
+  refund
+  bonus
+}
+
+enum SubscriptionPlan {
+  family
+  premium
+}
+
+/// MoR/Paddle vocabulary; provider webhooks map onto these.
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  paused
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique
+  name           String?
+  locale         String    @default("tr")
+  consentVersion String?   @map("consent_version")
+  consentAt      DateTime? @map("consent_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  characters    Character[]
+  assets        Asset[]
+  stories       Story[]
+  creditsLedger CreditLedgerEntry[]
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Character {
+  id                   String          @id @default(uuid()) @db.Uuid
+  userId               String          @map("user_id") @db.Uuid
+  name                 String
+  age                  Int?
+  type                 CharacterType
+  artStyle             String          @map("art_style") // style-preset slug (registry, not enum)
+  status               CharacterStatus @default(draft)
+  sheetAssetIds        String[]        @map("sheet_asset_ids") @db.Uuid
+  createdAt            DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  sourcePhotoDeletedAt DateTime?       @map("source_photo_deleted_at") @db.Timestamptz(3)
+
+  user            User             @relation(fields: [userId], references: [id])
+  storyCharacters StoryCharacter[]
+
+  @@index([userId])
+  @@map("characters")
+}
+
+model Asset {
+  id               String           @id @default(uuid()) @db.Uuid
+  userId           String           @map("user_id") @db.Uuid
+  kind             AssetKind
+  r2Key            String           @map("r2_key")
+  mime             String
+  bytes            Int
+  moderationStatus ModerationStatus @default(pending) @map("moderation_status")
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt        DateTime?        @map("expires_at") @db.Timestamptz(3)
+
+  user       User        @relation(fields: [userId], references: [id])
+  pageImages StoryPage[] @relation("PageImage")
+  pageAudios StoryPage[] @relation("PageAudio")
+
+  @@index([userId])
+  @@map("assets")
+}
+
+model Story {
+  id        String      @id @default(uuid()) @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  title     String?
+  topic     String
+  moral     String
+  language  String      @default("tr")
+  artStyle  String      @map("art_style") // style-preset slug (registry, not enum)
+  voiceId   String?     @map("voice_id")
+  status    StoryStatus @default(queued)
+  manifest  Json?       @map("manifest_jsonb") @db.JsonB
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user            User             @relation(fields: [userId], references: [id])
+  pages           StoryPage[]
+  jobs            Job[]
+  storyCharacters StoryCharacter[]
+
+  @@index([userId])
+  @@map("stories")
+}
+
+/// M:N story ↔ character (plan §4.5). MVP writes one row per story;
+/// position 0 = primary hero. Enables Phase-2 multi-character (plan §2.2) and
+/// the KVKK "which stories feature this character" deletion query.
+model StoryCharacter {
+  storyId     String @map("story_id") @db.Uuid
+  characterId String @map("character_id") @db.Uuid
+  position    Int    @default(0)
+
+  story     Story     @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  character Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, characterId])
+  @@index([characterId])
+  @@map("story_characters")
+}
+
+model StoryPage {
+  id                 String  @id @default(uuid()) @db.Uuid
+  storyId            String  @map("story_id") @db.Uuid
+  index              Int
+  text               String
+  illustrationPrompt String? @map("illustration_prompt")
+  imageAssetId       String? @map("image_asset_id") @db.Uuid
+  audioAssetId       String? @map("audio_asset_id") @db.Uuid
+  durationMs         Int?    @map("duration_ms")
+
+  story      Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  imageAsset Asset? @relation("PageImage", fields: [imageAssetId], references: [id], onDelete: SetNull)
+  audioAsset Asset? @relation("PageAudio", fields: [audioAssetId], references: [id], onDelete: SetNull)
+
+  @@unique([storyId, index])
+  @@index([storyId])
+  @@map("story_pages")
+}
+
+/// Mirror of BullMQ queue state for UI/audit (plan §4.5). Story-scoped.
+model Job {
+  id         String    @id @default(uuid()) @db.Uuid
+  storyId    String    @map("story_id") @db.Uuid
+  stage      JobStage
+  status     JobStatus @default(queued)
+  attempts   Int       @default(0)
+  error      String?
+  startedAt  DateTime? @map("started_at") @db.Timestamptz(3)
+  finishedAt DateTime? @map("finished_at") @db.Timestamptz(3)
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@map("jobs")
+}
+
+/// Append-only credits ledger — balance = SUM(delta), never a mutable column (plan §4.5).
+model CreditLedgerEntry {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  delta     Int
+  reason    CreditReason
+  refId     String?      @map("ref_id")
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("credits_ledger")
+}
+
+model Subscription {
+  id               String             @id @default(uuid()) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  stripeCustomerId String?            @map("stripe_customer_id")
+  plan             SubscriptionPlan
+  status           SubscriptionStatus
+  periodEnd        DateTime?          @map("period_end") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+/// user_id nullable for system-originated events (no acting user) — DECISIONS 2026-07-14.
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  action    String
+  entity    String
+  meta      Json?    @map("meta_jsonb") @db.JsonB
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("audit_log")
+}
+
+// ─── Internal (non-domain) ───────────────────────────────────────────────────
+
+/// S0 walking-skeleton table (m0-kickoff §7): api enqueues → worker writes a row
+/// → GET reads it back. Proves the async spine; not part of the product domain.
 model HealthJob {
   id          String   @id @db.Uuid
   requestId   String   @map("request_id")
