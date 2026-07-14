@@ -11,7 +11,7 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 4 done, WALKING SKELETON GREEN)
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 5 done, monorepo complete + pnpm check GREEN)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
@@ -46,9 +46,14 @@ Done (Block 4) — apps/api (Fastify 5 + zod type provider) + apps/worker (BullM
   - EXIT EVIDENCE (freshly run): POST x-request-id=demo-req-42 → worker "health-job processed" → GET returns requestId=demo-req-42 → pg row present. requestId propagated api→queue→worker→db. (m0-kickoff §7 ✓)
   - .env.example += API_HOST/API_PORT; build+typecheck+lint all green (shared 10/10 vitest)
   - CAVEAT: manual round-trip proven; automated integration test (testcontainers, handbook §7) NOT yet written — deferred to CI block
-NOW:  Block 5 · step — empty scaffolds: apps/web (Next 16 placeholder page) + packages/ui (placeholder index, no tokens) + packages/providers (adapter interface stubs) — m0-kickoff §2/§7
-Then: dependency-cruiser + .dependency-cruiser.cjs (unblocks pnpm depcruise/check) → CI (.github pr.yml/main.yml) → ADR 0001-0004 → Day-2 issues #2/#3/#4 → open PR #1
-Reminder: dev infra (pnpm infra:up) RUNNING; api/worker are node dist (stopped after evidence). Full pnpm check still red ONLY on missing depcruise config (next).
+Done (Block 5) — monorepo complete (7 projects) + pnpm check GREEN end-to-end (17/17 turbo tasks + depcruise 0 violations):
+  - apps/web: Next 16 App Router placeholder (src/app/layout+page), next.config, per-pkg turbo.json (typecheck dependsOn build for .next/types)
+  - packages/ui: placeholder index (UI_PACKAGE_NAME), no tokens (Stream C)
+  - packages/providers: adapter interfaces (Text/Image/TTS/Moderation) — vendor SDKs contained here (§3.1)
+  - .dependency-cruiser.cjs: no-circular, shared-leaf, ui-presentational, packages≠apps, apps-isolated, vendor-sdk-containment → depcruise 33 modules 0 violations
+NOW:  Block 6 · step — CI + ADRs + Day-2 issues: .github/workflows (pr.yml/main.yml/nightly stub) + PR template + gitleaks in lefthook + labels; docs/adr/0001-0004; gh issue #2/#3/#4 (DoR-complete)
+Then: open PR #1 (paste migration SQL); /end ritual
+Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence. Audit gaps remaining: #5 CI, #6 ADRs, #8 Day-2 issues.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2
