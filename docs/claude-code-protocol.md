@@ -183,6 +183,7 @@ Need info to proceed?
 | Price/credit/refund logic | plan.md §7.2 + DECISIONS.md + explicit Tolga sign-off in PR (never agent-initiated) |
 | Consent/retention/deletion behavior | plan.md §5 + privacy policy source + Tolga sign-off |
 | Process/tooling/CI rule | engineering-handbook.md |
+| Deploy/infra change (Dockerfiles, Railway config, service settings, watch-paths) | railway-deployment.md + handbook §5.3 |
 | Agent-workflow lesson learned | this file, or CLAUDE.md if it's a hard rule |
 | Any decision at all | DECISIONS.md (one line, always — superset of the above) |
 

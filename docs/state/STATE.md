@@ -56,6 +56,10 @@ Done (Block 6) — closed the audit's 3 remaining gaps:
   - ADRs (#6): docs/adr/0001-fastify · 0002-better-auth · 0003-prisma · 0004-biome (plan §8.4)
   - Day-2 issues (#8): gh #2 Stream A (worker+providers, incl ai-provider-scale-architecture.md ptr) · #3 Stream B (api+db) · #4 Stream C (web+ui) — all DoR-complete (goal/acceptance/context)
 S0a AUDIT: 9/9 ✅ (fresh evidence). pnpm check GREEN (17/17 + depcruise 0 violations). Walking skeleton re-verified live.
+Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbook §5.3 defers):
+  - Doc-Touch row added (deploy/infra → railway-deployment.md + §5.3); m0-kickoff C2 step-1 = read that doc
+  - Reconciled existing code: REDIS_URL → shared buildRedisConnection() with family:0 (Railway IPv6 gotcha #3); api honors injected PORT + binds 0.0.0.0 (was API_HOST/API_PORT). Walking skeleton re-verified green.
+  - PENDING for S0b (no infra/railway files exist yet): 3 Dockerfiles (turbo prune --docker, DOCKERFILE builder), railway.<svc>.json (api preDeploy=migrate), .dockerignore §3.3
 NOW:  push chore/1-s0-bootstrap → open PR #1 (paste migration SQL from f0358e5/20421d1 in body) — NEEDS Tolga's go (first push, outward-facing)
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.

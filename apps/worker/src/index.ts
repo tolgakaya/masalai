@@ -1,16 +1,13 @@
 import { upsertHealthJob } from '@masalai/db';
-import { HEALTH_JOB_QUEUE, parseHealthJobPayload } from '@masalai/shared';
+import { buildRedisConnection, HEALTH_JOB_QUEUE, parseHealthJobPayload } from '@masalai/shared';
 import { Worker } from 'bullmq';
 import { env } from './env.js';
 import { logger } from './logger.js';
 
-const redisUrl = new URL(env.REDIS_URL);
 const connection = {
-  host: redisUrl.hostname,
-  port: Number(redisUrl.port) || 6379,
+  ...buildRedisConnection(env.REDIS_URL),
   // BullMQ workers require this to be null.
   maxRetriesPerRequest: null,
-  ...(redisUrl.password ? { password: redisUrl.password } : {}),
 };
 
 /**

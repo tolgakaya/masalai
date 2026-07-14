@@ -145,9 +145,14 @@ logic; any UI beyond one placeholder page per app; packages/ui content.
 
 Read docs/state/STATE.md and reconcile with git (protocol §4.1). Baseline: pnpm check.
 
+**S0b is executed per docs/railway-deployment.md — it is normative for infra/railway/**
+and Railway mechanics (handbook §5.3 defers to it). STEP 1 of this session is: read
+docs/railway-deployment.md (esp. §2 service settings, §3 Dockerfile pattern, §4 config-as-code,
+§5.3 ioredis family:0, §7 gotcha catalog). Every Dockerfile/railway.json below follows it.**
+
 Mission — issue #5 "S0b: staging deploy", branch chore/5-staging-deploy:
 1. Railway project: environments (staging, production-empty), services web/api/worker
-   from the repo with watch-paths per handbook §5.3; Postgres + Redis provisioned;
+   from the repo with watch-paths per railway-deployment.md §2 / handbook §5.3; Postgres + Redis provisioned;
    R2 buckets + least-privilege tokens documented in .env.example (I will create the
    Cloudflare R2 buckets and paste tokens into Railway variables when you tell me
    exactly which variables you need — list them, don't invent values).

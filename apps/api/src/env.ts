@@ -3,8 +3,9 @@ import { z } from 'zod';
 /** Validated process environment. Fail fast on boot rather than crash mid-request. */
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  API_HOST: z.string().default('0.0.0.0'),
-  API_PORT: z.coerce.number().int().positive().default(3001),
+  // Railway injects PORT per-service; treat as optional-with-default and always
+  // bind 0.0.0.0 (railway-deployment.md §3.2). Local default 8080.
+  PORT: z.coerce.number().int().positive().default(8080),
   DATABASE_URL: z.url(),
   REDIS_URL: z.url(),
 });

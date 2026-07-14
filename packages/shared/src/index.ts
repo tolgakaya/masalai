@@ -15,3 +15,5 @@ export {
 } from './errors.js';
 export type { HealthJobPayload } from './health-job.js';
 export { healthJobPayloadSchema, parseHealthJobPayload } from './health-job.js';
+export type { RedisConnectionOptions } from './redis.js';
+export { buildRedisConnection } from './redis.js';
