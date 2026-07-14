@@ -61,7 +61,7 @@ Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbo
   - Doc-Touch row added (deploy/infra → railway-deployment.md + §5.3); m0-kickoff C2 step-1 = read that doc
   - Reconciled existing code: REDIS_URL → shared buildRedisConnection() with family:0 (Railway IPv6 gotcha #3); api honors injected PORT + binds 0.0.0.0 (was API_HOST/API_PORT). Walking skeleton re-verified green.
   - PENDING for S0b (no infra/railway files exist yet): 3 Dockerfiles (turbo prune --docker, DOCKERFILE builder), railway.<svc>.json (api preDeploy=migrate), .dockerignore §3.3
-NOW:  PR #5 is OPEN (branch pushed). Next → watch pr.yml CI go green (`gh pr checks 5`), then Tolga reviews + squash-merges; after merge turn ON branch protection (handbook §4.5). Then S0b (staging deploy) as a NEW issue+branch per docs/railway-deployment.md.
+NOW:  PR #5 OPEN + **CI GREEN** (pr.yml: verify/gitleaks/pr-title/loc-size all pass, run 29333269784). Awaiting Tolga review → squash-merge → turn ON branch protection (handbook §4.5). Then S0b (staging deploy) as a NEW issue+branch per docs/railway-deployment.md.
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
