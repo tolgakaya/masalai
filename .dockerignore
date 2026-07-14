@@ -1,0 +1,12 @@
+# Small build context, no secret can leak into an image (railway-deployment.md §3.3).
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+.git
+docs
+*.log
+.env
+.env.*
+!.env.example

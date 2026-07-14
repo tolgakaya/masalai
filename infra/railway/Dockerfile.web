@@ -1,0 +1,30 @@
+# apps/web image — Next.js standalone (railway-deployment.md §3.1). Same
+# prune/install/build stages; runner copies the standalone server + static + public.
+FROM node:22-alpine AS base
+RUN corepack enable
+
+FROM base AS pruner
+WORKDIR /repo
+COPY . .
+RUN pnpm dlx turbo@2 prune @masalai/web --docker
+
+FROM base AS builder
+WORKDIR /repo
+COPY --from=pruner /repo/out/json/ .
+RUN pnpm install --frozen-lockfile
+COPY --from=pruner /repo/out/full/ .
+RUN pnpm turbo build --filter=@masalai/web
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+RUN addgroup -S app && adduser -S app
+ENV NODE_ENV=production
+# next.config.mjs sets output: 'standalone' → self-contained server under apps/web/.
+COPY --from=builder /repo/apps/web/.next/standalone ./
+COPY --from=builder /repo/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder /repo/apps/web/public ./apps/web/public
+USER app
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- "http://127.0.0.1:${PORT:-8080}/api/health" || exit 1
+CMD ["node", "apps/web/server.js"]

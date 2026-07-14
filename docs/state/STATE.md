@@ -6,9 +6,10 @@
 ## INTEGRATION (owned by integrator — Tolga)
 - Milestone: **M0 / S0** — bootstrap. Repo: github.com/tolgakaya/masalai (private).
 - Bootstrap exception used once: `docs:` commit direct to main (c8994e5). Branch protection goes ON after PR #1 merges (handbook §4.5).
-- Pending merges: **PR #5** (chore/1-s0-bootstrap, S0a) — OPEN (github.com/tolgakaya/masalai/pull/5), pushed 2026-07-14, CI (pr.yml) running. NOTE: GitHub shares issue/PR numbering → the bootstrap PR is #5, not #1; the S0b issue will be the next free number (#6+), NOT #5 as m0-kickoff C2 text guesses.
-- Contract PRs in flight: none.
-- Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
+- Merged: **PR #5** (S0a) → main @ 089c5af (2026-07-14, merge-commit not squash — noted, future PRs squash). NOTE: GitHub shares issue/PR numbering; bootstrap PR was #5. S0b issue = **#6**.
+- ⚠️ Tolga TODO (post-merge, still OPEN): turn ON branch protection (handbook §4.5) — was gated on first merge, now due.
+- In flight: **chore/6-staging-deploy** (S0b, issue #6) — infra/railway files, code half done + docker-verified locally.
+- Next merge window: end of S0b.
 
 ## S0 block (active this session)
 ### Milestone: M0 · S0a (skeleton + protocol infra) — CODE COMPLETE (audit 9/9 ✅); remaining = push + PR #1 + /end
@@ -61,7 +62,16 @@ Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbo
   - Doc-Touch row added (deploy/infra → railway-deployment.md + §5.3); m0-kickoff C2 step-1 = read that doc
   - Reconciled existing code: REDIS_URL → shared buildRedisConnection() with family:0 (Railway IPv6 gotcha #3); api honors injected PORT + binds 0.0.0.0 (was API_HOST/API_PORT). Walking skeleton re-verified green.
   - PENDING for S0b (no infra/railway files exist yet): 3 Dockerfiles (turbo prune --docker, DOCKERFILE builder), railway.<svc>.json (api preDeploy=migrate), .dockerignore §3.3
-NOW:  PR #5 OPEN + **CI GREEN** (pr.yml: verify/gitleaks/pr-title/loc-size all pass, run 29333269784). Awaiting Tolga review → squash-merge → turn ON branch protection (handbook §4.5). Then S0b (staging deploy) as a NEW issue+branch per docs/railway-deployment.md.
+Done (S0a) — MERGED to main @ 089c5af (PR #5). CI green. S0a complete.
+
+### Milestone: M0 · S0b (staging deploy, issue #6) — in progress · branch chore/6-staging-deploy
+Done (S0b code half) — infra/railway config, ALL 3 IMAGES BUILT + RUN-VERIFIED LOCALLY (docker):
+  - infra/railway/Dockerfile.{api,worker,web}: multi-stage turbo prune --docker → install → build → pnpm deploy --legacy --prod; alpine, non-root, HEALTHCHECK; web=Next standalone; api/worker regenerate Prisma client in /out
+  - infra/railway/railway.{api,worker,web}.json: DOCKERFILE builder; api preDeployCommand=prisma migrate deploy (schema shipped via db "files"); web health /api/health; worker no HTTP health
+  - .dockerignore (§3.3); apps/web /api/health route + next output:standalone; @prisma/client+prisma direct deps on api/worker (hoist for image); prisma→db prod dep; infra/railway/README.md (Tolga dashboard checklist §2/§5.4)
+  - EXIT EVIDENCE (freshly run, prod images): api+worker containers → POST x-request-id=container-e2e-clean → worker "processed" → GET returns it → pg row present; web container /api/health 200 + home renders. 4 Dockerfile deltas recorded (DECISIONS 2026-07-14).
+  - pnpm check GREEN 17/17 + depcruise 0 violations.
+NOW:  commit S0b infra on chore/6-staging-deploy → push → open PR (#7). THEN Tolga (dashboard half, can't be agent-done): create Railway project/envs, set per-service Root=EMPTY + RAILWAY_DOCKERFILE_PATH + config path + watch-paths (infra/railway/README.md), provision Postgres+Redis, create R2 buckets + paste secrets (var list in README §5.4), verify staging round-trip. Also: turn ON branch protection now (overdue).
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
