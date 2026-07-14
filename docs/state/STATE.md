@@ -11,7 +11,7 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 2b done)
+### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 3a done)
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
@@ -28,8 +28,16 @@ Done (Block 2b) — local dev infra, all 4 services booted healthy (docker compo
   - .env.example: DATABASE_URL/REDIS_URL/S3_*/SMTP_*/PROVIDERS=mock (dev-only throwaways; apps' env.ts wire these later, same PR)
   - root scripts: infra:up / infra:down / infra:logs
   - watch: minio/mailpit on :latest (comment: pin RELEASE.*/vX.Y before CI depends). Stack left RUNNING for next step.
-NOW:  Block 3 · step — packages/db: Prisma schema v1 from plan §4.5 + first migration + userId-first repository skeleton (handbook §7)
+Done (Block 3a) — packages/db @masalai/db scaffold + async-spine table, green (build+typecheck+lint+test):
+  - prisma/schema.prisma: HealthJob model (health_jobs, uuid id, request_id, enqueued_at/processed_at timestamptz) — spine only, NOT domain
+  - first migration 20260714105329_init_health_job applied to local pg; SQL verified (\d health_jobs matches)
+  - src/client.ts (internal PrismaClient singleton), repositories/health-job.repository.ts (upsert=idempotent + findById), index.ts barrel, README
+  - deps: @prisma/client + prisma 6.19.3, @masalai/shared workspace:*; pnpm onlyBuiltDependencies allowlist added (Prisma engines)
+  - DECISIONS: prisma-client-js classic generator; pnpm onlyBuiltDependencies (both 2026-07-14)
+NOW:  Block 3b · step — packages/db: full plan §4.5 domain schema (users/characters/assets/stories/story_pages/jobs/credits_ledger/subscriptions/audit_log) as 2nd migration + userId-first repo skeletons (handbook §7)
+  - §4.5 only enumerates values for assets.kind + credits_ledger.reason → use Prisma enums there; other status/type/style fields = String v1 (record DECISION + QUESTIONS, don't guess)
 Then: apps/api → apps/worker → apps/web+ui+providers → walking-skeleton integration test
+Reminder: dev infra stack (pnpm infra:up) is RUNNING — postgres has health_jobs + _prisma_migrations.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2

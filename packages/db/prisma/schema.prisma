@@ -1,0 +1,30 @@
+// MasalAI database schema. The product domain model (users, characters, assets,
+// stories, ...) comes from plan §4.5 and lands in a follow-up migration.
+//
+// This first migration contains ONLY the walking-skeleton table (health_jobs),
+// which proves the api→queue→worker async spine (m0-kickoff §7) and is
+// deliberately separate from the product domain.
+//
+// Conventions (engineering-handbook §6.5): snake_case tables (plural) + columns,
+// timestamptz for time. Generator/output choice recorded in DECISIONS.md.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Internal health-check job for the S0 walking skeleton (m0-kickoff §7).
+/// The api enqueues a payload; the worker consumes it and writes a row here;
+/// GET /internal/health-job/:id reads it back. Not part of the product domain.
+model HealthJob {
+  id          String   @id @db.Uuid
+  requestId   String   @map("request_id")
+  enqueuedAt  DateTime @map("enqueued_at") @db.Timestamptz(3)
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(3)
+
+  @@map("health_jobs")
+}
