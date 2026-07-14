@@ -1,0 +1,43 @@
+{
+  "name": "masalai",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=10 <11"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "infra:up": "docker compose -f docker-compose.dev.yml up -d",
+    "infra:down": "docker compose -f docker-compose.dev.yml down",
+    "infra:logs": "docker compose -f docker-compose.dev.yml logs -f",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "check": "pnpm lint && turbo run typecheck test && pnpm depcruise",
+    "db:migrate": "pnpm --filter @masalai/db migrate",
+    "db:studio": "pnpm --filter @masalai/db studio",
+    "prepare": "lefthook install || true"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.3",
+    "@types/node": "^22.10.0",
+    "dependency-cruiser": "18.1.0",
+    "lefthook": "2.1.10",
+    "turbo": "2.10.5",
+    "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "lefthook"
+    ]
+  }
+}

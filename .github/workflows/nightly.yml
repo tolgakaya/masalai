@@ -1,0 +1,30 @@
+name: nightly
+
+# 03:00 TRT (UTC+3) == 00:00 UTC.
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Outdated dependency report (Renovate-adjacent)
+        run: pnpm outdated -r || true
+
+  # STUB (handbook §5.1) — these land with their subsystems:
+  #   - live provider smoke tests (RUN_LIVE=1)
+  #   - LLM-judge regression suite (20 canonical stories)
+  #   - k6 light load
+  #   - R2 backup verification job

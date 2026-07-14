@@ -1,0 +1,17 @@
+# Git hooks (lefthook). Installed by `pnpm prepare` (lefthook install).
+# CI (.github/workflows/pr.yml) is the authoritative gate; these hooks are the
+# fast local first line so obvious problems never reach a PR.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      run: pnpm exec biome check --staged --no-errors-on-unmatched
+    - name: gitleaks
+      # Runs if gitleaks is installed locally; CI enforces it regardless.
+      run: command -v gitleaks >/dev/null 2>&1 && gitleaks git --staged --no-banner --redact || echo "gitleaks not installed locally — CI enforces secret scanning"
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: node scripts/check-commit-msg.mjs {1}

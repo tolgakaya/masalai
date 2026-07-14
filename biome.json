@@ -1,0 +1,57 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!**/dist", "!**/.next", "!**/generated", "!**/*.min.js"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "openai": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "@anthropic-ai/sdk": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "elevenlabs": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "@google/generative-ai": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "replicate": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "@fal-ai/client": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "stripe": "Vendor SDKs live only in packages/providers (handbook §3.1).",
+              "@aws-sdk/client-s3": "Use packages/providers storage adapter (handbook §3.1)."
+            }
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/providers/**"],
+      "linter": { "rules": { "style": { "noRestrictedImports": "off" } } }
+    },
+    {
+      "includes": ["**/*.config.*", "**/scripts/**", "**/*.test.ts"],
+      "linter": { "rules": { "suspicious": { "noExplicitAny": "off" } } }
+    }
+  ]
+}
