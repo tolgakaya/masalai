@@ -14,6 +14,7 @@
 ### Milestone: M0 · S0a (skeleton + protocol infra) — CODE COMPLETE (audit 9/9 ✅); remaining = push + PR #1 + /end
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
+GREEN CHECKPOINT @ 0259d9a (2026-07-14) — pnpm check 17/17 + depcruise 0 violations; walking skeleton verified; tree clean.
 Done (Block 1):
   - protocol state files + root CLAUDE.md (adca42b)
   - .claude/commands (7) + settings.json + hooks (d82e351)
@@ -60,7 +61,7 @@ Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbo
   - Doc-Touch row added (deploy/infra → railway-deployment.md + §5.3); m0-kickoff C2 step-1 = read that doc
   - Reconciled existing code: REDIS_URL → shared buildRedisConnection() with family:0 (Railway IPv6 gotcha #3); api honors injected PORT + binds 0.0.0.0 (was API_HOST/API_PORT). Walking skeleton re-verified green.
   - PENDING for S0b (no infra/railway files exist yet): 3 Dockerfiles (turbo prune --docker, DOCKERFILE builder), railway.<svc>.json (api preDeploy=migrate), .dockerignore §3.3
-NOW:  push chore/1-s0-bootstrap → open PR #1 (paste migration SQL from f0358e5/20421d1 in body) — NEEDS Tolga's go (first push, outward-facing)
+NOW:  ONE action → `git push -u origin chore/1-s0-bootstrap` then open PR #1 (title "chore: S0 bootstrap"; body pastes migration SQL from f0358e5 + 20421d1). NEEDS Tolga's explicit go (first push, outward-facing). Everything is committed + green @ 0259d9a.
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
