@@ -11,7 +11,7 @@
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
 ## S0 block (active this session)
-### Milestone: M0 · S0a (skeleton + protocol infra) — in progress (Block 5 done, monorepo complete + pnpm check GREEN)
+### Milestone: M0 · S0a (skeleton + protocol infra) — CODE COMPLETE (audit 9/9 ✅); remaining = push + PR #1 + /end
 Issue #1 — Day 1 S0 bootstrap
 Branch: chore/1-s0-bootstrap   PR: (draft, opens at session end)
 Done (Block 1):
@@ -51,9 +51,14 @@ Done (Block 5) — monorepo complete (7 projects) + pnpm check GREEN end-to-end 
   - packages/ui: placeholder index (UI_PACKAGE_NAME), no tokens (Stream C)
   - packages/providers: adapter interfaces (Text/Image/TTS/Moderation) — vendor SDKs contained here (§3.1)
   - .dependency-cruiser.cjs: no-circular, shared-leaf, ui-presentational, packages≠apps, apps-isolated, vendor-sdk-containment → depcruise 33 modules 0 violations
-NOW:  Block 6 · step — CI + ADRs + Day-2 issues: .github/workflows (pr.yml/main.yml/nightly stub) + PR template + gitleaks in lefthook + labels; docs/adr/0001-0004; gh issue #2/#3/#4 (DoR-complete)
-Then: open PR #1 (paste migration SQL); /end ritual
-Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence. Audit gaps remaining: #5 CI, #6 ADRs, #8 Day-2 issues.
+Done (Block 6) — closed the audit's 3 remaining gaps:
+  - CI (#5): .github/workflows/pr.yml (check+build+audit), main.yml, nightly.yml stub; PR template + ISSUE_TEMPLATE/task.yml; lefthook real hooks (biome+gitleaks pre-commit, conventional commit-msg via scripts/check-commit-msg.mjs — both verified live); gh labels (prio/stream/area/type)
+  - ADRs (#6): docs/adr/0001-fastify · 0002-better-auth · 0003-prisma · 0004-biome (plan §8.4)
+  - Day-2 issues (#8): gh #2 Stream A (worker+providers, incl ai-provider-scale-architecture.md ptr) · #3 Stream B (api+db) · #4 Stream C (web+ui) — all DoR-complete (goal/acceptance/context)
+S0a AUDIT: 9/9 ✅ (fresh evidence). pnpm check GREEN (17/17 + depcruise 0 violations). Walking skeleton re-verified live.
+NOW:  push chore/1-s0-bootstrap → open PR #1 (paste migration SQL from f0358e5/20421d1 in body) — NEEDS Tolga's go (first push, outward-facing)
+Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
+Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
 
 ### Next steps after Block 2
