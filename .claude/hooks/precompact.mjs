@@ -7,7 +7,13 @@ import { appendFileSync, existsSync } from 'node:fs';
 const STATE = 'docs/state/STATE.md';
 try {
   if (!existsSync(STATE)) process.exit(0);
-  const sh = (c) => { try { return execSync(c, { encoding: 'utf8', timeout: 5000 }).trim(); } catch { return ''; } };
+  const sh = (c) => {
+    try {
+      return execSync(c, { encoding: 'utf8', timeout: 5000 }).trim();
+    } catch {
+      return '';
+    }
+  };
   const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
   const branch = sh('git rev-parse --abbrev-ref HEAD') || '(detached)';
   const last = sh('git log --oneline -1') || '(no commits)';

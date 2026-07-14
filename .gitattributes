@@ -1,0 +1,19 @@
+# Normalize line endings to LF in the repo (parity across local/CI/Railway; handbook §2.2)
+* text=auto eol=lf
+
+# Binary assets — never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary
+*.pdf binary
+
+# Generated lockfile: keep LF, mark as generated (collapsed in diffs)
+pnpm-lock.yaml linguist-generated=true text eol=lf

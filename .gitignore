@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.next/
+.turbo/
+out/
+*.tsbuildinfo
+
+# generated code (Prisma client, OpenAPI, etc.)
+**/generated/
+packages/db/prisma/client/
+
+# test / coverage
+coverage/
+playwright-report/
+test-results/
+
+# env & secrets (keep .env.example)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# tooling caches
+.serena/
+.DS_Store
+*.log
+npm-debug.log*

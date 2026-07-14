@@ -28,24 +28,18 @@
   "hooks": {
     "PreCompact": [
       {
-        "hooks": [
-          { "type": "command", "command": "node .claude/hooks/precompact.mjs" }
-        ]
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/precompact.mjs" }]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "node .claude/hooks/shared-typecheck.mjs" }
-        ]
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/shared-typecheck.mjs" }]
       }
     ],
     "Stop": [
       {
-        "hooks": [
-          { "type": "command", "command": "node .claude/hooks/stop-state-reminder.mjs" }
-        ]
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/stop-state-reminder.mjs" }]
       }
     ]
   }
