@@ -65,13 +65,14 @@ Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbo
 Done (S0a) — MERGED to main @ 089c5af (PR #5). CI green. S0a complete.
 
 ### Milestone: M0 · S0b (staging deploy, issue #6) — in progress · branch chore/6-staging-deploy
+GREEN CHECKPOINT @ 90384de (2026-07-14) — pnpm check 17/17 + depcruise 0 violations; all 3 prod images docker-verified; tree clean.
 Done (S0b code half) — infra/railway config, ALL 3 IMAGES BUILT + RUN-VERIFIED LOCALLY (docker):
   - infra/railway/Dockerfile.{api,worker,web}: multi-stage turbo prune --docker → install → build → pnpm deploy --legacy --prod; alpine, non-root, HEALTHCHECK; web=Next standalone; api/worker regenerate Prisma client in /out
   - infra/railway/railway.{api,worker,web}.json: DOCKERFILE builder; api preDeployCommand=prisma migrate deploy (schema shipped via db "files"); web health /api/health; worker no HTTP health
   - .dockerignore (§3.3); apps/web /api/health route + next output:standalone; @prisma/client+prisma direct deps on api/worker (hoist for image); prisma→db prod dep; infra/railway/README.md (Tolga dashboard checklist §2/§5.4)
   - EXIT EVIDENCE (freshly run, prod images): api+worker containers → POST x-request-id=container-e2e-clean → worker "processed" → GET returns it → pg row present; web container /api/health 200 + home renders. 4 Dockerfile deltas recorded (DECISIONS 2026-07-14).
   - pnpm check GREEN 17/17 + depcruise 0 violations.
-NOW:  commit S0b infra on chore/6-staging-deploy → push → open PR (#7). THEN Tolga (dashboard half, can't be agent-done): create Railway project/envs, set per-service Root=EMPTY + RAILWAY_DOCKERFILE_PATH + config path + watch-paths (infra/railway/README.md), provision Postgres+Redis, create R2 buckets + paste secrets (var list in README §5.4), verify staging round-trip. Also: turn ON branch protection now (overdue).
+NOW:  ONE action (committed @ 90384de, awaiting go) → `git push -u origin chore/6-staging-deploy` + open PR (#7). THEN Tolga dashboard half (can't be agent-done): Railway project/envs, per-service Root=EMPTY + RAILWAY_DOCKERFILE_PATH + config path + watch-paths (see infra/railway/README.md), provision Postgres+Redis, create R2 buckets + paste secrets (var matrix README §5.4), verify staging round-trip. Also overdue: turn ON branch protection (handbook §4.5).
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
