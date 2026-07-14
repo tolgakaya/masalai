@@ -1,4 +1,4 @@
-# STATE — updated 2026-07-14 (session: chore/1-s0-bootstrap · S0a morning, Block 2 done)
+# STATE — updated 2026-07-14 (session: chore/1-s0-bootstrap · S0a CODE COMPLETE, green @ 4053e2d)
 
 > Multi-stream format (protocol §12 rule 2). During S0 a single session writes the **S0** block below;
 > streams A/B/C activate Day 2. On conflict, git + this file win over Serena memory / /sc:save.
