@@ -6,7 +6,7 @@
 ## INTEGRATION (owned by integrator — Tolga)
 - Milestone: **M0 / S0** — bootstrap. Repo: github.com/tolgakaya/masalai (private).
 - Bootstrap exception used once: `docs:` commit direct to main (c8994e5). Branch protection goes ON after PR #1 merges (handbook §4.5).
-- Pending merges: PR #1 (chore/1-s0-bootstrap, S0a) — draft.
+- Pending merges: **PR #5** (chore/1-s0-bootstrap, S0a) — OPEN (github.com/tolgakaya/masalai/pull/5), pushed 2026-07-14, CI (pr.yml) running. NOTE: GitHub shares issue/PR numbering → the bootstrap PR is #5, not #1; the S0b issue will be the next free number (#6+), NOT #5 as m0-kickoff C2 text guesses.
 - Contract PRs in flight: none.
 - Next merge window: end of S0a; Day-2 windows ~13:00 + EOD (protocol §12 rule 4).
 
@@ -61,7 +61,7 @@ Done (Railway doc adoption) — docs/railway-deployment.md now normative (handbo
   - Doc-Touch row added (deploy/infra → railway-deployment.md + §5.3); m0-kickoff C2 step-1 = read that doc
   - Reconciled existing code: REDIS_URL → shared buildRedisConnection() with family:0 (Railway IPv6 gotcha #3); api honors injected PORT + binds 0.0.0.0 (was API_HOST/API_PORT). Walking skeleton re-verified green.
   - PENDING for S0b (no infra/railway files exist yet): 3 Dockerfiles (turbo prune --docker, DOCKERFILE builder), railway.<svc>.json (api preDeploy=migrate), .dockerignore §3.3
-NOW:  ONE action → `git push -u origin chore/1-s0-bootstrap` then open PR #1 (title "chore: S0 bootstrap"; body pastes migration SQL from f0358e5 + 20421d1). NEEDS Tolga's explicit go (first push, outward-facing). Everything is committed + green @ 0259d9a.
+NOW:  PR #5 is OPEN (branch pushed). Next → watch pr.yml CI go green (`gh pr checks 5`), then Tolga reviews + squash-merges; after merge turn ON branch protection (handbook §4.5). Then S0b (staging deploy) as a NEW issue+branch per docs/railway-deployment.md.
 Then: /end ritual → /sc:save. Day-1 afternoon = S0b staging deploy (issue #5, separate session per m0-kickoff C2).
 Reminder: dev infra (pnpm infra:up) RUNNING; api/worker stopped after evidence.
 Watch out: pin baseline majors, not npm-latest (DECISIONS 2026-07-14, handbook §2.2); @masalai/* package naming
